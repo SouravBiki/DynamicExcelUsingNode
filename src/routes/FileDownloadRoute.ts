@@ -122,7 +122,7 @@ router.get('/exportExcel', async (req: express.Request, res: express.Response, n
             columns: wbSubTable1Column,
             name: "Employee",
             rows: wbSubTable1Data,
-            skipRows: 2,
+            skipRows: 4,
             skipColumns: 1,
             style: wbSubTable1Style
         }
