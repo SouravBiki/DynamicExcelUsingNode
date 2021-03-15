@@ -12,13 +12,13 @@ export class ExcelTable {
         const worksheet: Excel.Worksheet = workbook.addWorksheet(sheetName);
 
         if (workbookHeader) {
-            this.processMergedCell(workbookHeader,worksheet, "H");
+            this.processMergedCell(workbookHeader, worksheet, "H", workbook);
         }
 
         this.processSubTables(subTables, worksheet);
 
         if (workbookFooter) {
-            this.processMergedCell(workbookFooter,worksheet, "F");
+            this.processMergedCell(workbookFooter, worksheet, "F", workbook);
         }
 
         return workbook;
@@ -53,9 +53,10 @@ export class ExcelTable {
     private processMergedCell(
         mergedCellProps: MergedCell,
         worksheet: Excel.Worksheet,
-        type: string | undefined): void {
-        
-        const { title, imgFilePath, bcgColor, textColor, skipColumns, skipRow, colSpan, rowSpan } = mergedCellProps;
+        type: string | undefined,
+        workbook: Excel.Workbook): void {
+
+        const { title, imgFilePath, bcgColor, cellFont, skipColumns, skipRow, colSpan, rowSpan } = mergedCellProps;
         let headerStartRowNum = 1;
         if (type == "F")
             headerStartRowNum = worksheet.rowCount + 1
@@ -72,19 +73,28 @@ export class ExcelTable {
         if (colSpan)
             headerEndColumn = this.nextColumn(headerStartColumn, colSpan);
         let headerEndCell = headerEndColumn + headerEndRowNum;
-
-        worksheet.getCell(headerStartCell).value = title;
-        console.log(headerEndCell);
-        worksheet.mergeCells(`${headerStartCell}:${headerEndCell}`);
-        worksheet.getCell(headerStartCell).fill = {
-            type: 'pattern',
-            pattern: 'solid',
-            fgColor: { argb: 'FFFFFF00' },
-            bgColor: { argb: 'FF0000FF' }
-        };
+        if (imgFilePath) {
+            let logo = workbook.addImage({
+                filename: imgFilePath,
+                extension: 'png',
+            });
+            worksheet.addImage(logo, `${headerStartCell}:${headerEndCell}`);
+        }
+        else {
+            worksheet.getCell(headerStartCell).value = title;
+            console.log(headerEndCell);
+            worksheet.mergeCells(`${headerStartCell}:${headerEndCell}`);
+            if (cellFont)
+                worksheet.getCell(headerStartCell).font = cellFont;
+            worksheet.getCell(headerStartCell).fill = {
+                type: 'pattern',
+                pattern: 'solid',
+                bgColor: bcgColor
+            };
+        }
     }
 
-    
+
 
     nextColumn(current: string, nextColumnTravel: number = 1): string {
         let alphabet = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'];

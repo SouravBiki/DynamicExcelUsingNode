@@ -1,34 +1,49 @@
 import express from 'express';
 import { ExcelTable } from '../utility/ExcelTable';
 import { MergedCell } from '../models/MergedCell';
-import { TableStyle } from '../models/TableStyle';
+import { TableStyle, AllowedThemes, CellFont, AllowedFonts, CellColor } from '../models/TableDesign';
 import { TableColumn } from '../models/TableColumns';
 import { SubTable } from '../models/subtable';
 import { ExcelWorkbook } from '../models/ExcelWorkbook';
+import { CustomError } from '../errors/CustomError';
+import { BadRequestError } from '../errors/bad-request-error';
 
 
 const router = express.Router();
 router.get('/test', async (req, res, next) => {
     res.status(200).send("ABC");
-
 });
 
 router.get('/exportExcel', async (req: express.Request, res: express.Response, next: express.NextFunction) => {
     try {
+
+        let textColor:CellColor = {argb:"FFFFFF00"};
+        let bcgColor:CellColor = {argb:"FF0000FF"};
+        let font:CellFont={
+            name:AllowedFonts.Cosmic,
+            bold:true,
+            family:2,
+            size:14,
+            italic:true,
+            color:textColor,
+            underline:false
+        }
         let wbHeader: MergedCell = {
             title: "My First Excel Export Using ExcelJS",
-            textColor: "white",
-            bcgColor: "black",
-            colSpan: 3,
-            skipColumns: 2,
-            rowSpan: 2
+            cellFont:font,
+            bcgColor: bcgColor,
+            colSpan: 7,
+            //skipColumns: 2,
+            rowSpan: 2,
+            imgFilePath:"./src/static/images/ExcelLogo.PNG"
         }
         let wbFooter: MergedCell = {
             title: "My First Excel Export Using ExcelJS Ends Here",
-            textColor: "white",
-            bcgColor: "black",
-            colSpan: 3,
-            skipColumns: 2,
+            cellFont:font,
+            bcgColor: bcgColor,
+            colSpan: 7,
+            //skipColumns: 2,
+            skipRow: 2,
             rowSpan: 2
         }
         let wbSubTable1Column: TableColumn[] = [
@@ -47,6 +62,7 @@ router.get('/exportExcel', async (req: express.Request, res: express.Response, n
 
         ];
         let wbSubTable1Style: TableStyle = {
+            theme:AllowedThemes.Dark,
             showRowStripes: true
         }
 
@@ -55,47 +71,31 @@ router.get('/exportExcel', async (req: express.Request, res: express.Response, n
             ["B", 2, "ZXY"],
             ["C", 3, "YXZ"],
             ["D", 4, "XZY"],
-            ["E", 5, "ZYX"],
+            ["E", 5, "ZYX"]
         ]
-        let wbSubTable1: SubTable = {
-            columns: wbSubTable1Column,
-            name: "Employee",
-            rows: wbSubTable1Data,
-            skipRows: 2,
-            style: wbSubTable1Style
-        }
+        
 
 
         let wbSubTable2Column: TableColumn[] = [
             {
-                name: "Month",
-                filterButton: true
+                name: "Month"
             },
             {
-                name: "Profit",
-                filterButton: true
+                name: "Profit"
             }
         ];
 
         let wbSubTable2Style: TableStyle = {
+            theme:AllowedThemes.Light,
             showRowStripes: true
         }
 
         let wbSubTable2Data: Array<Array<any>> = [
-            ["Apr-Jun", "3.2%"],
-            ["Jul-Sep", "4.3%"],
-            ["Oct-Dec", "5.8%"],
-            ["Jan-Mar", "1.2%"],
+            ["Apr", 3.2],
+            ["Jul", 4.3],
+            ["Oct", 5.8],
+            ["Jan", 1.2]
         ]
-        let wbSubTable2: SubTable = {
-            columns: wbSubTable2Column,
-            name: "Quarter Profits",
-            rows: wbSubTable2Data,
-            headerRow: false,
-            //skipRows:2,
-            style: wbSubTable2Style
-        }
-
 
         let wbSubTable3Column: TableColumn[] = [
             {
@@ -109,6 +109,7 @@ router.get('/exportExcel', async (req: express.Request, res: express.Response, n
         ];
 
         let wbSubTable3Style: TableStyle = {
+            theme:AllowedThemes.Medium,
             showRowStripes: true
         }
 
@@ -116,6 +117,24 @@ router.get('/exportExcel', async (req: express.Request, res: express.Response, n
             ["WB", 12345],
             ["MUM", 20000]
         ]
+
+        let wbSubTable1: SubTable = {
+            columns: wbSubTable1Column,
+            name: "Employee",
+            rows: wbSubTable1Data,
+            skipRows: 2,
+            skipColumns: 1,
+            style: wbSubTable1Style
+        }
+
+        let wbSubTable2: SubTable = {
+            columns: wbSubTable2Column,
+            name: "QuarterProfits",
+            rows: wbSubTable2Data,
+            //skipColumns:1,
+            style: wbSubTable2Style
+        }
+
         let wbSubTable3: SubTable = {
             columns: wbSubTable3Column,
             name: "StateEmployee",
@@ -144,7 +163,7 @@ router.get('/exportExcel', async (req: express.Request, res: express.Response, n
         res.end();
     }
     catch (err) {
-        res.status(500).json(err);
+        throw new BadRequestError(`Excel Generation failed due to ${err.message}`);
     }
 })
 

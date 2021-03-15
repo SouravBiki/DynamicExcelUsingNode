@@ -1,5 +1,5 @@
 import {TableColumn} from './TableColumns';
-import {TableStyle} from './TableStyle';
+import {TableStyle} from './TableDesign';
 export interface SubTable {
   name: string;
   skipRows?: number;

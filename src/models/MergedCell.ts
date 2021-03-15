@@ -1,3 +1,5 @@
+import { CellColor, CellFont } from "./TableDesign";
+
 export interface MergedCell {
     title?: string;
     imgFilePath?: string;
@@ -5,6 +7,6 @@ export interface MergedCell {
     skipColumns?: number;
     rowSpan?: number;
     colSpan?: number;
-    textColor?: string;
-    bcgColor?: string;
+    cellFont?: CellFont;
+    bcgColor?: CellColor;
 }
