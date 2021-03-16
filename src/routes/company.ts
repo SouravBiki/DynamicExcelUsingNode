@@ -52,4 +52,4 @@ router.get('/export/:companyId', async (req: express.Request, res: express.Respo
 
 
 
-export { router as FileDownloadRoute };
+export { router as CompanyRoute };
